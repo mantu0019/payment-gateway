@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.21.0/dist/axios.min.js"></script>
+
+
+</head>
+
+<body>
+    <h1 style="
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    color: #2563eb;
+    letter-spacing: -1px;
+    margin-bottom: 25px;
+    font-family: 'Segoe UI', sans-serif;
+">
+        Razorpay Payment Gateway
+    </h1>
+    <button id="paybtn">PAY NOW</button>
+
+    <script>
+
+        async function payNow() {
+
+            const res = await axios.post("http://localhost:3000/api/payment/6ae5d99af75a2086686f0e99");
+
+            const { data } = res;
+
+            const rzp = new window.Razorpay({
+                key: data.keyId,
+                order_id: data.orderId,
+                amount: data.amount * 100,
+                currency: data.currency,
+                name: "mouse hai ",
+                description: "computer gadget",
+                handler: async function (response) {
+
+                    const verify = await axios.post(
+                        "http://localhost:3000/api/payment/verify",
+                        {
+                            orderId: data.orderId,
+
+                            paymentId: response.razorpay_payment_id,
+
+                            signature: response.razorpay_signature
+                        }
+                    );
+
+                    if (verify.data.success === true) {
+                        alert("Payment Successful!");
+                    } else {
+                        alert("Payment Failed!");
+                    }
+
+                }
+
+
+            })
+
+            rzp.open()
+
+        }
+
+        document.getElementById("paybtn").addEventListener("click", payNow)
+
+
+    </script>
+
+</body>
+
+</html>
